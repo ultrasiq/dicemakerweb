@@ -236,7 +236,7 @@ export class BabylonDiceManager {
     material.specularColor = new Color3(0.3, 0.3, 0.3); // More specular for displacement visibility
     material.ambientColor = new Color3(0.2, 0.2, 0.2); // More ambient light
     material.useParallax = true; // Enable parallax mapping for better displacement visibility
-
+    material.backFaceCulling = false;
     this.diceMesh.material = material;
   }
 
@@ -421,6 +421,24 @@ export class BabylonDiceManager {
     mesh.convertToFlatShadedMesh();
     
     console.log('Displacement applied successfully');
+  }
+
+  /**
+   * Assigns a debug texture (checkerboard or gradient) to the D6 mesh for UV debugging.
+   * @param textureSource - Canvas, image URL, or data URL to use as the texture
+   */
+  public setDebugTexture(textureSource: HTMLCanvasElement | string): void {
+    if (!this.diceMesh) return;
+    const material = new StandardMaterial('debugTextureMaterial', this.scene);
+    if (typeof textureSource === 'string') {
+      material.diffuseTexture = new Texture(textureSource, this.scene);
+    } else {
+      material.diffuseTexture = new Texture(textureSource.toDataURL(), this.scene);
+    }
+    material.specularColor = new Color3(0.1, 0.1, 0.1);
+    material.ambientColor = new Color3(0.2, 0.2, 0.2);
+    material.backFaceCulling = false;
+    this.diceMesh.material = material;
   }
 }
 

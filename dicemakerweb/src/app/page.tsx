@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { DiceType, DICE_CONFIGS, ExportSettings } from '@/types/dice';
 import DiceViewer, { DiceViewerRef } from '@/components/DiceViewer';
 import CustomizationPanel from '@/components/CustomizationPanel';
@@ -13,9 +13,39 @@ export default function Home() {
   const [customizationType, setCustomizationType] = useState<'text' | 'image'>('text');
   const [textValue, setTextValue] = useState('');
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [showCheckerboard, setShowCheckerboard] = useState(false);
   
   // Ref to access the BabylonDiceManager instance
   const diceManagerRef = useRef<DiceViewerRef>(null);
+
+  // Helper to create checkerboard canvas
+  function createCheckerboardCanvas(size = 256, squares = 8): HTMLCanvasElement {
+    const canvas = document.createElement('canvas');
+    canvas.width = canvas.height = size;
+    const ctx = canvas.getContext('2d')!;
+    const squareSize = size / squares;
+    for (let y = 0; y < squares; y++) {
+      for (let x = 0; x < squares; x++) {
+        ctx.fillStyle = (x + y) % 2 === 0 ? '#fff' : '#000';
+        ctx.fillRect(x * squareSize, y * squareSize, squareSize, squareSize);
+      }
+    }
+    return canvas;
+  }
+
+  // Effect to apply/remove checkerboard debug texture
+  useEffect(() => {
+    const diceManager = diceManagerRef.current?.getDiceManager();
+    if (!diceManager || selectedDiceType !== 'D6') return;
+    if (showCheckerboard) {
+      const checkerboard = createCheckerboardCanvas();
+      diceManager.setDebugTexture(checkerboard);
+    } else {
+      // Restore default material
+      // @ts-expect-error: applyDefaultMaterial is public in BabylonDiceManager
+      diceManager.applyDefaultMaterial?.();
+    }
+  }, [showCheckerboard, selectedDiceType]);
 
   const handleExport = async (settings: ExportSettings) => {
     setIsExporting(true);
@@ -139,7 +169,21 @@ export default function Home() {
                 </select>
               </div>
             </div>
-            
+            {/* Checkerboard toggle for D6 only */}
+            {selectedDiceType === 'D6' && (
+              <div className="mb-4 flex items-center space-x-2">
+                <input
+                  id="checkerboard-toggle"
+                  type="checkbox"
+                  checked={showCheckerboard}
+                  onChange={e => setShowCheckerboard(e.target.checked)}
+                  className="form-checkbox h-4 w-4 text-blue-600"
+                />
+                <label htmlFor="checkerboard-toggle" className="text-sm text-gray-700">
+                  Show Checkerboard Debug Texture
+                </label>
+              </div>
+            )}
             <DiceViewer 
               diceType={selectedDiceType}
               ref={diceManagerRef}

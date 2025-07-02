@@ -162,9 +162,9 @@ export class BabylonDiceManager {
           const i1 = base + iy * (grid + 1) + (ix + 1);
           const i2 = base + (iy + 1) * (grid + 1) + (ix + 1);
           const i3 = base + (iy + 1) * (grid + 1) + ix;
-          // Two triangles per quad
-          indices.push(i0, i1, i2);
-          indices.push(i0, i2, i3);
+          // Two triangles per quad (fixed winding order)
+          indices.push(i0, i2, i1);
+          indices.push(i0, i3, i2);
         }
       }
     }
@@ -236,7 +236,7 @@ export class BabylonDiceManager {
     material.specularColor = new Color3(0.3, 0.3, 0.3); // More specular for displacement visibility
     material.ambientColor = new Color3(0.2, 0.2, 0.2); // More ambient light
     material.useParallax = true; // Enable parallax mapping for better displacement visibility
-    material.backFaceCulling = false;
+    material.backFaceCulling = true;
     this.diceMesh.material = material;
   }
 
@@ -437,7 +437,7 @@ export class BabylonDiceManager {
     }
     material.specularColor = new Color3(0.1, 0.1, 0.1);
     material.ambientColor = new Color3(0.2, 0.2, 0.2);
-    material.backFaceCulling = false;
+    material.backFaceCulling = true;
     this.diceMesh.material = material;
   }
 }
